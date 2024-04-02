@@ -2,10 +2,9 @@ name: Node.js build and Lambda Deployment
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-#=========================================
   build:
     name: Build Node.js Project
     runs-on: ubuntu-latest
@@ -13,41 +12,41 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: Use Node.js 20.5.1
         uses: actions/setup-node@v2
         with:
           node-version: '20.5.1'
+
       - name: Install dependencies
         run: npm install
-#========================================= 
-#=========================================
+
   deploy-to-lambda:
-  name: Deploy to AWS Lambda
-  runs-on: ubuntu-latest
-  needs: [build, sonarqube-analysis]
+    name: Deploy to AWS Lambda
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Set up Python (AWS CLI dependency)
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
 
-    - name: Set up Python (AWS CLI dependency)
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
+      - name: Install AWS CLI
+        run: pip install awscli
 
-    - name: Install AWS CLI
-      run: pip install awscli
+      - name: Generate Deployment Package
+        run: zip -r function.zip .
 
-    - name: Generate Deployment Package
-      run: zip -r function.zip .
-
-    - name: Deploy to AWS Lambda
-      run: |
-        aws lambda update-function-code --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} --zip-file fileb://function.zip
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Deploy to AWS Lambda
+        run: |
+          aws lambda update-function-code --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} --zip-file fileb://function.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
