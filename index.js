@@ -2,9 +2,10 @@
 
 export async function handler(event) {
 
+    // GOVINDAAAA//
 // Endpoint to generate random username and email
     const queryname = event.queryStringParameters;
-    const name = queryname ? queryname.name : 'Ahamed'; // Get name from query parameter or use 'Guest' if not provided
+    const name = queryname ? queryname.name : 'Ahmed'; // Get name from query parameter or use 'Guest' if not provided
 
     // Generate random username
     const username = generateUsername(name);
